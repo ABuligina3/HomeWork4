@@ -1,277 +1,167 @@
 package org.future.code.Main;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 public class Main {
-
     /*
-   Домашнее задание #5:
-   !!! У всех полей классов выставить модификатор доступа private
 
-   Реализовать исключение «PersonDead»
-       Наследовать класс от «Exception»
+    Напиши реализацию интерфейса Playable:
+        - Метод List<String> play()
+        - Метод List<String> playWith(Playable playable)
 
-   Реализовать класс «Person»
-       Поля класса - name:String, protection:Integer, health:Integer (+конструктор, +геттеры)
-       Все Люди имеют 50 здоровья и защиту 0
-       У класса Person должно быть два конструктора
-            - protected конструктор - все поля являются аргументами конструктора
-            - public конструктор - задается только имя, остальное значения по умолчанию
-       Метод - String announce() {} - возвращает строку в формате "Person /name/ имеет характеристики: /health/ здоровья и /protection/ защиты"
-       Метод - void takeDamage(Integer damage) {} - вычитает урон из здоровья персонажа по формуле health - (damage - protection)
-            Урон не может быть отрицательным (вызывать исключение Exception)
-            Здоровье не может стать отрицательным
-            Когда здоровье персонажа опускается до 0, выкидывается исключение PersonDead
-       Метод - Integer facePunch() - удар в лицо наносит один урон
+    Напиши реализацию абстрактного класса Instrument:
+        - Класс должен релизовать интерфейс Playable
+        - Поля класса - sound:String, times:Integer (колличество посторейний звука) (+ конструктор/геттеры)
+        - Реализация List<String> play() - метод возвращает список из одной
+            строки сформированной по правилу (sound + " ") * times
+        - Реализация List<String> playWith(Playable playable) - метод должен вернуть массив
+            результатов игры интсруметов в порядке вызова - сначала класс у которого вызвали метод,
+            затем класс уоторый передали в качестве аргумента
 
-   Реализовать класс «Mage»
-       Наследовать класс от «Person»
-       Конструктор класса принимает только имя
-       Все Маги имеют 100 здоровья и защиту 15
-       Метод(Переопределить) announce - возвращает строку в формате Mage + вызов метода announce у родителя
-       Метод(Переопределить) takeDamage - вычитает урон из здоровья персонажа
-            по формуле health - (damage - protection - health % 10) (Случайный баф)
-            !!! Метод должен вызывать метод takeDamage super-класса
-       Метод - Integer fireBall() - фаербол наносит 45 урона
+    Напиши реализацию классов Guitar и Drum:
+        - Классы наследуют класс Instrument
+        - Конструкторы классов не должны принимать никакие агрументы
+        - sound для Guitar "Трунь" и times 2
+        - sound для Drum "Бац" и times 3
 
-   Реализовать класс «Archer»
-       Наследовать класс от «Person»
-       Конструктор класса принимает только имя
-       Все Лучники имеют 120 здоровья и защиту 12
-       Метод(Переопределить) announce - возвращает строку в формате Archer + вызов метода announce у родителя
-       Метод(Переопределить) takeDamage - вычитает урон из здоровья персонажа
-            по формуле health - (damage - protection + health % 10) (Случайный дебаф)
-            !!! Метод должен вызывать метод takeDamage super-класса
-       Метод - Integer shootBow() - стрельба из лука наносит 40 + health % 10 урона
-    */
+    Напиши реализацию класса Orchestra
+        - Поля - instruments:List<Instrument> (+геттер)
+        - Конструктор класса должен принимать любое число агрументов типа Instrument
+            Подстказка: загугли что такое функции с переменным числом агрументов и сделай так же
+        - Класс должен реализовать интерфейс Playable
+        - Реализация List<String> play() - вызываются методы play всех инструментов оркестра,
+            результаты вызовов собираются в спиок и возвращаются
+        - Реализация List<String> playWith(Playable playable) - метод должен вернуть массив
+            результатов в порядке вызова - сначала класс у которого вызвали метод,
+            затем класс уоторый передали в качестве аргумента
+ */
 
-    public static class PersonDead extends Exception {
-        public PersonDead(String message) {
-            super(message);
-        }
+    public interface Playable {
+        List<String> play();
+        List<String> playWith(Playable playable);
     }
 
-    public static class Person {
-        private final String name;
-        private final int protection;
-        private int health;
+    public static abstract class Instrument implements Playable {
+        private final String sound;
+        private final int times;
 
-        protected Person(String name, int protection, int health) {
-            this.name = name;
-            this.protection = protection;
-            this.health = health;
+        public Instrument(String sound, int times) {
+            this.sound = sound;
+            this.times = times;
         }
 
-        public Person(String name) {
-            this.name = name;
-            this.protection = 0;
-            this.health = 50;
+        public String getSound() {
+            return sound;
         }
 
-        public String getName() {
-            return name;
+        public int getTimes() {
+            return times;
         }
 
-        public int getProtection() {
-            return protection;
-        }
-
-        public int getHealth() {
-            return health;
-        }
-
-        String announce() {
-            return "Person " + name + " имеет характеристики: " + health + " здоровья и " + protection + " защиты";
-        }
-
-        void takeDamage(Integer damage) throws Exception {
-            if (damage < 0) {
-                throw new Exception();
+        @Override
+        public List<String> play() {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < times; i++) {
+                result.append(sound).append(" ");
             }
-            health = health - (damage - protection);
-            if (health <= 0) {
-                health = 0;
-                throw new PersonDead("Персонаж погиб");
+            return Collections.singletonList(result.toString().strip());
+        }
+
+        @Override
+        public List<String> playWith(Playable playable) {
+            List<String> result = new ArrayList<>();
+            result.add(play().get(0));
+            result.add(playable.play().get(0));
+            return result;
+        }
+    }
+
+    public static class Guitar extends Instrument {
+        public Guitar() {
+            super("Трунь", 2);
+        }
+    }
+
+    public static class Drum extends Instrument {
+        public Drum() {
+            super("Бац", 3);
+        }
+    }
+
+    public static class Orchestra implements Playable {
+        private final List<Instrument> instruments;
+
+        public Orchestra(Instrument... instruments) {
+            this.instruments = Arrays.stream(instruments).toList();
+        }
+
+        public List<Instrument> getInstruments() {
+            return instruments;
+        }
+
+        @Override
+        public List<String> play() {
+            List<String> result = new ArrayList<>();
+            for (Instrument instrument : instruments) {
+                result.add(instrument.play().get(0));
             }
+            return result;
         }
 
-        Integer facePunch() {
-            return 1;
+        @Override
+        public List<String> playWith(Playable playable) {
+            List<String> result = new ArrayList<>();
+            for (Instrument instrument : instruments) {
+                result.add(instrument.play().get(0));
+            }
+            result.add(playable.play().get(0));
+            return result;
         }
     }
 
-    public static class Mage extends Person{
-        public Mage(String name) {
-            super(name, 15, 100);
-        }
+    public static void main(String[] args) {
+        var guitar = new Guitar();
+        var drum = new Drum();
+        print("Guitar: Гитара создалась", true);
+        print("Drum:   Барабан создался", true);
+        print("Guitar: play Guitar должно быть " + GUITAR_R, Objects.equals(guitar.play().get(0), GUITAR_R));
+        print("Drum:   play Drum должно быть " + DRUM_R, Objects.equals(drum.play().get(0), DRUM_R));
+        print("Guitar: playWith Drum первая гитара", Objects.equals(guitar.playWith(drum).get(0), GUITAR_R));
+        print("Guitar: playWith Drum последний барабан", Objects.equals(guitar.playWith(drum).get(1), DRUM_R));
+        print("Drum:   playWith Guitar первый барабан", Objects.equals(drum.playWith(guitar).get(0), DRUM_R));
+        print("Drum:   playWith Guitar последняя гитара", Objects.equals(drum.playWith(guitar).get(1), GUITAR_R));
 
-        @Override
-        String announce() {
-            return "Mage " + super.announce();
-        }
-
-        @Override
-        void takeDamage(Integer damage) throws Exception {
-            super.takeDamage(damage - getHealth() % 10);
-        }
-
-        Integer fireBall() {
-            return 45;
-        }
-    }
-
-    public static class Archer extends Person{
-        public Archer(String name) {
-            super(name, 12, 120);
-        }
-
-        @Override
-        String announce() {
-            return "Archer " + super.announce();
-        }
-
-        @Override
-        void takeDamage(Integer damage) throws Exception {
-            super.takeDamage(damage + getHealth() % 10);
-        }
-
-        Integer shootBow() {
-            return 40 + getHealth() % 10;
-        }
-    }
-
-    /*
-   Это метод main - нажми play что бы запустить тесты.
-   Ничего не меняй в тестах, они уже написаны так что бы проверить твое решение.
-   Некоторые методы в тесте подсвечены красным - это значит что компилятор не может их найти.
-   Тебе необходимо их реализовать, пока ты это не сделаешь, тесты не запустятся.
-   */
-    public static void main(String[] args) throws Exception {
-        ANSIColor color = new ANSIColor();
-        boolean firstCheck;
-        boolean secondCheck;
-        boolean thirdCheck = false;
-
-        Person person = new Person(PERSON_NAME);
-        System.out.println(color.type("green", "Tests for Person"));
-        test("Person: Имеет 50 здоровья и 0 защиты", person.getHealth() == 50 && person.getProtection() == 0);
-        test("Person: announce() содержит имя", person.announce().contains(PERSON_NAME));
-        test("Person: announce() содержит здоровье", person.announce().contains(PERSON_HEALTH.toString()));
-        test("Person: announce() содержит защиту", person.announce().contains(PERSON_PROTECTION.toString()));
-        test("Person: facePunch() наносит 1 урон", person.facePunch() == 1);
-        try {
-            person.takeDamage(DAMAGE1);
-            test("Person: takeDamage() урон вычисляется правильно", person.getHealth() == 20);
-            person.takeDamage(DAMAGE1);
-        } catch (PersonDead e) {
-            test("Person: takeDamage() здоровье не опускается меньше нуля", person.getHealth() == 0);
-            test("Person: Вызов PersonDead()", true);
-        }
-
-        Mage mage = new Mage(MAGE_NAME);
-        System.out.println(color.type("green", "Tests for Mage"));
-        test("Mage: наследуется от Person", mage instanceof Person);
-        test("Mage: Имеет 100 здоровья и 15 защиты", mage.getHealth() == 100 && mage.getProtection() == 15);
-        test("Mage: announce() содержит имя", mage.announce().contains(MAGE_NAME));
-        test("Mage: announce() содержит здоровье", mage.announce().contains(MAGE_HEALTH.toString()));
-        test("Mage: announce() содержит защиту", mage.announce().contains(MAGE_HEALTH.toString()));
-        test("Mage: fireBall() наносит 45 урона", mage.fireBall() == 45);
-        mage.takeDamage(DAMAGE1);
-        firstCheck = mage.getHealth() == 85;
-        mage.takeDamage(DAMAGE1);
-        secondCheck = mage.getHealth() == 75;
-        test("Mage: takeDamage() считается по формуле", firstCheck && secondCheck);
-        try {
-            mage.takeDamage(DAMAGE2);
-        } catch (PersonDead e) {
-            thirdCheck = true;
-        }
-        test("Mage: вызов исключения PersonDead()", thirdCheck);
-
-        thirdCheck = false;
-        Archer archer = new Archer(ARCHER_NAME);
-        System.out.println(color.type("green", "Tests for Archer"));
-        test("Archer: Наследуется от Person", archer instanceof Person);
-        test("Archer: Имеет 120 здоровья и 12 защиты", archer.getHealth() == 120 && archer.getProtection() == 12);
-        test("Archer: announce() содержит имя", archer.announce().contains(ARCHER_NAME));
-        test("Archer: announce() содержит здоровье", archer.announce().contains(ARCHER_HEALTH.toString()));
-        test("Archer: announce() содержит защиту", archer.announce().contains(ARCHER_PROTECTION.toString()));
-        test("Archer: shootBow() считается по формуле", archer.shootBow() == 40 + archer.getHealth() % 10);
-        archer.takeDamage(DAMAGE1);
-        firstCheck = archer.getHealth() == 102;
-        archer.takeDamage(DAMAGE1);
-        test("Archer: shootBow() считается по формуле", archer.shootBow() == 40 + archer.getHealth() % 10);
-        secondCheck = archer.getHealth() == 82;
-        try {
-            archer.takeDamage(DAMAGE2);
-        } catch (PersonDead e) {
-            thirdCheck = true;
-        }
-        test("Archer: takeDamage() считается по формуле", firstCheck && secondCheck);
-        test("Archer: Вызов PersonDead()", thirdCheck);
+        var emptyOrchestra = new Orchestra();
+        var orchestra = new Orchestra(new Guitar(), new Drum(), new Guitar(), new Drum());
+        print("EmptyOrchestra: Пустой оркестр создался", true);
+        print("EmptyOrchestra: Инструменты должны быть пустым списком", emptyOrchestra.getInstruments() != null);
+        print("Orchestra: Оркестр создался", true);
+        print("Orchestra: В оркестре должно быть 4 инструмента", orchestra.getInstruments().size() == 4);
+        print("Orchestra: Должны сыграть 4 инструмента", orchestra.play().size() == 4);
+        print("Orchestra: Гитара играет первая", Objects.equals(orchestra.play().get(0), GUITAR_R));
+        print("Orchestra: Барабан играет второй", Objects.equals(orchestra.play().get(1), DRUM_R));
+        print("Orchestra: Гитара играет третья", Objects.equals(orchestra.play().get(2), GUITAR_R));
+        print("Orchestra: Барабан играет четвертый", Objects.equals(orchestra.play().get(3), DRUM_R));
+        print("Orchestra: Должны сыграть 5 инструментов", orchestra.playWith(new Guitar()).size() == 5);
+        print("Orchestra: Гитара играет последняя", Objects.equals(orchestra.playWith(new Guitar()).get(4), GUITAR_R));
     }
 
     /* Техническая секция - сюда писать ничего не надо */
 
-    private static void test(String expression, Boolean condition) {
-        ANSIColor color = new ANSIColor();
-        System.out.print("TEST CASE " + color.type("yellow+bold", normalOutput(expression, 60)));
-        if (condition)
-            System.out.println("✅");
-        else
-            System.out.println("❌");
+    private static void print(String condition, Boolean act) {
+        Function<String, String> yellow = str -> "\u001B[33m" + str + "\u001B[0m";
+        System.out.print( "TEST CASE " + yellow.apply(constLen(condition, 55)));
+        if (act) System.out.print("✅"); else System.out.print("❌");
+        System.out.println();
     }
 
-    private static String normalOutput(String str, int len) {
+    private static String constLen(String str, int len) {
         StringBuilder sb = new StringBuilder(str);
-        while ((len--) - str.length() > 0)
-            sb.append(" ");
+        while (len-- - str.length() > 0) sb.append(" ");
         return sb.toString();
     }
 
-    private final static String PERSON_NAME = "NamePerson";
-    private final static String MAGE_NAME = "NameMage";
-    private final static String ARCHER_NAME = "NameArcher";
-    private final static Integer PERSON_HEALTH = 50;
-    private final static Integer PERSON_PROTECTION = 0;
-    private final static Integer MAGE_HEALTH = 100;
-    private final static Integer MAGE_PROTECTION = 15;
-    private final static Integer ARCHER_HEALTH = 120;
-    private final static Integer ARCHER_PROTECTION = 12;
-    private final static Integer DAMAGE1 = 30;
-    private final static Integer DAMAGE2 = 1000;
-
-    private static class ANSIColor {
-        public Map<String, String> ansiColors = new HashMap<>();
-        {
-            ansiColors.put("reset", "\u001B[0m");
-            ansiColors.put("black", "\u001B[30m");
-            ansiColors.put("red", "\u001B[31m");
-            ansiColors.put("green", "\u001B[32m");
-            ansiColors.put("light_yellow", "\u001B[93m");
-            ansiColors.put("yellow", "\u001B[33m");
-            ansiColors.put("yellow_background", "\u001B[43m");
-            ansiColors.put("blue", "\u001B[34m");
-            ansiColors.put("purple", "\u001B[35m");
-            ansiColors.put("cyan", "\u001B[36m");
-            ansiColors.put("white", "\u001B[37m");
-            ansiColors.put("bold", "\u001B[1m");
-            ansiColors.put("stop_bold", "\u001B[21m");
-            ansiColors.put("underground", "\u001B[4m");
-            ansiColors.put("stop_underground", "\u001B[24m");
-            ansiColors.put("blink", "\u001B[5m");
-        }
-
-        public String type(String color, String message) {
-            String[] colors = color.split("\\+");
-            StringBuilder sb = new StringBuilder();
-            for (String colorr : colors) {
-                if (ansiColors.get(colorr.toLowerCase()) == null)
-                    throw new RuntimeException("Unknown ANSI color: " + colorr);
-                sb.append(ansiColors.get(colorr.toLowerCase()));
-            }
-            return sb.toString() + message + ansiColors.get("reset");
-        }
-    }
+    private static final String GUITAR_R = "Трунь Трунь";
+    private static final String DRUM_R = "Бац Бац Бац";
 }
